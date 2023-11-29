@@ -1,4 +1,3 @@
-
 # CleanUp Terraform Locks in Aws DynamoDB
 This Python script fetches and deletes terraform locks stored in Aws DynamoDB Table "terraform-locks".
 
@@ -43,41 +42,41 @@ It checks for the specified DynamoDB table, fetches records based on given crite
 
 ## Jenkins Credentials
 The Aws Secrets are stored in the Jenkins Credentials:
-- Stage: https://jenkins-ares.cdaas.umbrella.com/manage/credentials/store/system/domain/_/credential/jenkins-to-aws-stage-dynamodb-terraform-locks/
-- Prod: https://jenkins-ares.cdaas.umbrella.com/manage/credentials/store/system/domain/_/credential/jenkins-to-aws-prod-dynamodb-terraform-locks/
+- Stage: https://jenkins-project.com/manage/credentials/store/system/domain/_/credential/jenkins-to-aws-stage-dynamodb-terraform-locks/
+- Prod: https://jenkins-project.com/manage/credentials/store/system/domain/_/credential/jenkins-to-aws-prod-dynamodb-terraform-locks/
 
 ## Webex Credentials
-Room ID: https://jenkins-ares.cdaas.umbrella.com/manage/credentials/store/system/domain/_/credential/MARS_NOTIFY_ROOM_ID/
-Bot token: https://jenkins-ares.cdaas.umbrella.com/manage/credentials/store/system/domain/_/credential/webex-teams-mars-bot-access-token/
+Room ID: https://jenkins-project.com/manage/credentials/store/system/domain/_/credential/DEVOPS_NOTIFY_ROOM_ID/
+Bot token: https://jenkins-project.com/manage/credentials/store/system/domain/_/credential/webex-teams-DEVOPS-bot-access-token/
 
 ## QA Webex Credentials
 ```
-     [$class: 'StringBinding', credentialsId: 'SERHII_WEBEX_TOKEN', variable: 'TEST_WEBEX_TOKEN'],
-     [$class: 'StringBinding', credentialsId: 'SERHII_ROOM_ID', variable: 'TEST_ROOM_ID'],
+     [$class: 'StringBinding', credentialsId: 'TEST_WEBEX_TOKEN', variable: 'TEST_WEBEX_TOKEN'],
+     [$class: 'StringBinding', credentialsId: 'TEST_ROOM_ID', variable: 'TEST_ROOM_ID'],
      
-     python3 modules/cleanup_terraform_locks/main.py ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${component} ${env} ${TEST_WEBEX_TOKEN} ${TEST_ROOM_ID} ${action}
+     python3 main.py ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${component} ${env} ${TEST_WEBEX_TOKEN} ${TEST_ROOM_ID} ${action}
 ```
 
 ## Prod Webex Credentials
-https://jenkins-ares.cdaas.umbrella.com/manage/credentials/store/system/domain/_/credential/webex-teams-mars-bot-access-token/
+https://jenkins-project.com/manage/credentials/store/system/domain/_/credential/webex-teams-devops-bot-access-token/
 ```
         credentials(
             name: 'WEBEX_TEAMS_CREDENTIALS', 
             description: 'Webex Teams Bot credentials ID',
-            defaultValue: 'webex-teams-mars-bot-access-token',
+            defaultValue: 'webex-teams-devops-bot-access-token',
             credentialType: "Username with password", 
             required: true 
         )
         string(
             name: 'SPACE_ID',
-            defaultValue: 'Y2lzY29zcGFyazovL3VybjpURUFNOnVzLWVhc3QtMl9hOmlkZW50aXR5TG9va3VwL1JPT00vNzMxZjQ0MTAtZDQxNi0xMWViLWI3YWYtYzk2OGJlNDY1YzA0', // spaceName: 'Mars Notifications'
+            defaultValue: '******************', // spaceName: 'DevOps Notifications'
             description: 'The space ID of the webex teams room to notify'
         )
 ```
 OR
 ```angular2html
-     [$class: 'StringBinding', credentialsId: 'webex-teams-mars-bot-access-token', variable: 'MARS_NOTIFY_WEBEX_TOKEN'],
-     [$class: 'StringBinding', credentialsId: 'MARS_NOTIFY_ROOM_ID', variable: 'MARS_NOTIFY_ROOM_ID'],
+     [$class: 'StringBinding', credentialsId: 'webex-teams-devops-bot-access-token', variable: 'DEVOPS_NOTIFY_WEBEX_TOKEN'],
+     [$class: 'StringBinding', credentialsId: 'DEVOPS_NOTIFY_ROOM_ID', variable: 'DEVOPS_NOTIFY_ROOM_ID'],
 ```
 
 ## Script Output
@@ -92,10 +91,3 @@ Saving records to text files.
 ## Important Note
 - Ensure proper configurations and permissions are set for AWS access to DynamoDB tables.
 - Take caution when deleting records from the DynamoDB table, as the process is irreversible.
-
-## Links
-- JOB: https://jenkins-ares.cdaas.umbrella.com/job/ares.jobs/job/tool.cleanup.terraform.locks.deynamodb/
-- RUNBOOK: https://confluence-eng-rtp2.cisco.com/conf/pages/viewpage.action?pageId=472581487
-- AWS IAM: https://us-east-1.console.aws.amazon.com/iam/home?region=us-west-2#/users/details/jenkins-cleanup-terraform-locks
-- AWS IAM Policy: inside IAM user
-- AWS IAM Role: N/A
