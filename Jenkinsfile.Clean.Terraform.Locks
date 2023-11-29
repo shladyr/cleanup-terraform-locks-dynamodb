@@ -1,0 +1,65 @@
+properties(
+    [
+        parameters(
+            [
+                choice (choices: ['', 'dev', 'stage', 'prod'], description: 'Stage Aws account ********* (Dev Eks or Stage Eks) or Prod Aws Account ********', name: 'env'),
+                choice (choices: ['', 'component_1', 'component_2', 'component_3'], description: 'Project components', name: 'component'),
+                choice (choices: ['no', 'yes'], description: 'Send Deleted Records to DevOps Webex room ?', name: 'sendwebex'),
+                choice (choices: ['', 'no', 'yes'], description: 'Clean found terraform locks ?', name: 'action')
+            ]
+        )
+    ]
+)
+
+node('project-node') {       
+
+        @Library(["project-shared-pipelines"]) _
+
+        String env = params.env
+        String component = params.component
+        String sendwebex = params.sendwebex
+        String action = params.action
+
+        if (env == "dev" || env == "stage") {
+            stage("CleanUp Locks in Stage Aws for ${component}") {
+
+                withCredentials([
+                        [$class: 'StringBinding', credentialsId: 'webex-teams-devops-bot-access-token', variable: 'DEVOPS_NOTIFY_WEBEX_TOKEN'],
+                        [$class: 'StringBinding', credentialsId: 'DEVOPS_NOTIFY_ROOM_ID', variable: 'DEVOPS_NOTIFY_ROOM_ID'],
+                        [
+                           $class: 'AmazonWebServicesCredentialsBinding',
+                           credentialsId: "jenkins-to-aws-stage-dynamodb-terraform-locks",
+                           accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                           secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                        ]
+                ])
+                {
+                    sh '''
+                        pip3 install --user -r requirements.txt
+                        python3 main.py ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${component} ${env} ${DEVOPS_NOTIFY_WEBEX_TOKEN} ${DEVOPS_NOTIFY_ROOM_ID} ${sendwebex}
+                    '''
+                }
+            }
+        } else {
+            stage("CleanUp Locks in Prod Aws for ${component}") {
+
+                withCredentials([
+                        [$class: 'StringBinding', credentialsId: 'webex-teams-devops-bot-access-token', variable: 'DEVOPS_NOTIFY_WEBEX_TOKEN'],
+                        [$class: 'StringBinding', credentialsId: 'DEVOPS_NOTIFY_ROOM_ID', variable: 'DEVOPS_NOTIFY_ROOM_ID'],
+                        [
+                                $class: 'AmazonWebServicesCredentialsBinding',
+                                credentialsId: "jenkins-to-aws-prod-dynamodb-terraform-locks",
+                                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                        ]
+                ])
+                {
+                     sh '''
+                        pip3 install --user -r requirements.txt
+                        python3 main.py ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${component} ${env} ${TEST_WEBEX_TOKEN} ${TEST_ROOM_ID} ${sendwebex}
+                    '''
+                }
+            }
+        }
+}
+
